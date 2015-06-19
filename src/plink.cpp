@@ -1,5 +1,8 @@
-#define PLINK_OFFSET 3 // 3-bytes offset in plink binary format 
+#include <iostream>
+#include "plink.hpp"
 
+#define PLINK_OFFSET 3
+#define PACK_DENSITY 4
 /* 3 is 11 in binary, we need a 2 bit mask for each of the 4 positions */
 #define MASK0 3  /* 3 << 2 * 0 */
 #define MASK1 12  /* 3 << 2 * 1 */
@@ -47,32 +50,21 @@ void decode_plink(unsigned char *out,
    }
 }
 
+void read_bed(char* data, Eigen::MatrixXd& X){
+   unsigned int np;
+   int N = X.rows();
+   int nsnps = X.cols();
+   Eigen::VectorXd tmp3(N);
 
-void Data::read_bed(int impute)
-{
-   
-   in.seekg(0, std::ifstream::end);
-
-   // file size in bytes, ignoring first 3 bytes (2byte magic number + 1byte mode)
-   len = (unsigned int)in.tellg() - 3;
-
-   // size of packed data, in bytes, per SNP
    np = (unsigned int)ceil((double)N / PACK_DENSITY);
-   nsnps = len / np;
-   in.seekg(3, std::ifstream::beg);
-
    unsigned char* tmp = new unsigned char[np];
-
-   // Allocate more than the sample size since data must take up whole bytes
    unsigned char* tmp2 = new unsigned char[np * PACK_DENSITY];
-   X = MatrixXd(N, nsnps);
-
-   VectorXd tmp3(N);
 
    for(unsigned int j = 0 ; j < nsnps ; j++)
       {
          // read raw genotypes
-         in.read((char*)tmp, sizeof(char) * np);
+         std::copy(data + PLINK_OFFSET + (sizeof(char) * np) * j,
+                   data + PLINK_OFFSET + (sizeof(char) * np) * (j + 1), tmp);
 
          // decode the genotypes
          decode_plink(tmp2, tmp, np);
@@ -82,12 +74,6 @@ void Data::read_bed(int impute)
          X.col(j) = tmp3;
       }
    
-   X.col(j) = tmp3;
-   p = X.cols();
-
    delete[] tmp;
    delete[] tmp2;
-   
-
-   in.close();
 }
