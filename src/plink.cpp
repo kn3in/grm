@@ -77,3 +77,7 @@ void read_bed(char* data, Eigen::MatrixXd& X){
    delete[] tmp;
    delete[] tmp2;
 }
+
+void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A) {
+   A = X*X.transpose() / X.cols();
+}

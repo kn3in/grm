@@ -14,7 +14,8 @@ int main () {
   int nindiv = 3925; // number of individuals as per test.fam
   int nsnps = 1000; // number of snps as per test.bim
   Eigen::MatrixXd X(nindiv, nsnps);
-
+  Eigen::MatrixXd A(nindiv, nindiv);
+  
   struct stat sb;
   int fd = -1; // file descriptor
   char* data = NULL;
@@ -28,6 +29,12 @@ int main () {
   munmap(data, sb.st_size);
   close(fd);
   
-  std::cout << X << std::endl;
+  // std::cout << X << std::endl;
+
+  calculate_grm(X, A);
+  // write_grm();
+  // update_grm();
+  std::cout << A << std::endl;
+  
   return 0;
 }
