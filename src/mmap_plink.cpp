@@ -32,9 +32,30 @@ int main () {
   // std::cout << X << std::endl;
 
   calculate_grm(X, A);
-  // write_grm();
+  
+  off_t size = sizeof(int) * nindiv * (nindiv + 1) / 2;
+  std::cout << size << std::endl;
+  int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  int result = lseek(grm_file, size - 1, SEEK_SET);
+  result = write(grm_file, "", 1);
+
+  float* grm = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, grm_file, 0);
+  
+  for(int i = 0; i < nindiv; i++) {
+    for(int j = 0; j <= i; j++) {
+      grm[i + j] = A(i,j);
+    }
+  }
+
+  std::cout << sizeof(float) << std::endl;
+
+
+  // write_grm(A, char* grm);
   // update_grm();
-  std::cout << A << std::endl;
+  // std::cout << A << std::endl;
+
+  munmap(grm, size);
+  close(grm_file);
   
   return 0;
 }
