@@ -29,8 +29,6 @@ int main () {
   munmap(data, sb.st_size);
   close(fd);
   
-  // std::cout << X << std::endl;
-
   calculate_grm(X, A);
   
   off_t size = sizeof(int) * nindiv * (nindiv + 1) / 2;
@@ -46,13 +44,6 @@ int main () {
       grm[i + j] = A(i,j);
     }
   }
-
-  std::cout << sizeof(float) << std::endl;
-
-
-  // write_grm(A, char* grm);
-  // update_grm();
-  // std::cout << A << std::endl;
 
   munmap(grm, size);
   close(grm_file);
