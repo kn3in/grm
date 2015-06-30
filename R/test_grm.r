@@ -38,4 +38,63 @@ read_GRMBin <- function(prefix, size = 4){
 }
 
 grm <- read_GRMBin("../bin/a")
-grmt <- read_GRMBin("../data/test")
+grmt <- read_GRMBin("../data/gcta")
+
+grm_text <- read.table("../bin/grm.txt")
+grm_text <- as.matrix(grm_text)
+diff <- grm_text - grmt
+hist(diff[lower.tri(diff, diag = FALSE)])
+
+which(diff == max(diff), arr.ind = TRUE)
+
+which(diff == max(diff[lower.tri(diff, diag = FALSE)]), arr.ind = TRUE)
+
+2553 1860
+
+hist(grm_text[ ,1860])
+
+
+mmap_geno <- read.table("../bin/geno.txt", header = FALSE, sep = " ")
+mmap_geno[1:10,1:10]
+na_ind <- which(mmap_geno == 3L, arr.ind = TRUE)
+mmap_geno[na_ind] <- NA
+
+bim <- read.table("../data/test.bim", stringsAsFactors = FALSE)
+colnames(mmap_geno) <- bim$V2
+
+mmap_geno[1:4,1:4]
+table(is.na(mmap_geno[1860, ]))
+
+sum(mmap_geno[2553, ] * mmap_geno[1860, ], na.rm = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

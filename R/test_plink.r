@@ -24,4 +24,13 @@ my_geno[1:10,1:10]
 
 colnames(mmap_geno) <- bim$V2
 
-all.equal(as.matrix(2 - mmap_geno), my_geno, check.attributes = FALSE)
+all.equal(as.matrix(mmap_geno), my_geno, check.attributes = FALSE)
+
+pseudo_grm <- as.matrix(mmap_geno[1:10, ]) %*% t(as.matrix(mmap_geno[1:10, ]))
+
+
+t1 <- as.matrix(mmap_geno[1:10, ])
+t1[is.na(t1)] <- 0
+t1 %*% t(t1) /1000
+
+
