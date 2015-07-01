@@ -33,24 +33,26 @@ int main () {
 
   calculate_grm(X, A);
   
-  std::cout << A << std::endl;
+  // std::cout << A << std::endl;
 
-  // off_t size = sizeof(int) * nindiv * (nindiv + 1) / 2;
-  // // std::cout << size << std::endl;
-  // int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  // int result = lseek(grm_file, size - 1, SEEK_SET);
-  // result = write(grm_file, "", 1);
+  off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
+  // std::cout << size << std::endl;
+  int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  int result = lseek(grm_file, size - 1, SEEK_SET);
+  result = write(grm_file, "", 1);
 
-  // float* grm = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, grm_file, 0);
+  float* grm = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, grm_file, 0);
   
-  // for(int i = 0; i < nindiv; i++) {
-  //   for(int j = 0; j <= i; j++) {
-  //     grm[i + j] = A(i,j);
-  //   }
-  // }
+  int sum_up_toi = 0;
+  for(int i = 0; i < nindiv; ++i) {
+    sum_up_toi += i;
+      for(int j = 0; j <= i; ++j) {
+        grm[sum_up_toi + j] = (float)A(i,j);
+    }
+  }
 
-  // munmap(grm, size);
-  // close(grm_file);
+  munmap(grm, size);
+  close(grm_file);
   
   return 0;
 }
