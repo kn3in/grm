@@ -80,7 +80,7 @@ void read_bed(char* data, Eigen::MatrixXd& X){
 }
 
 double swap_na(double x, double NA, double tol) {
-         double out = (abs(x - NA)) < tol ? 0.0 : x;
+         double out = (fabs(x - NA)) < tol ? 0.0 : x;
          return out;
 } 
 
@@ -118,21 +118,28 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A) {
    }
 
    NM = NMG * NMG.transpose();
+   
+   // std::cout << NM << std::endl;
 
    // Calculate reference allele frequency
    for(int i = 0; i < nsnps; i++) {
+      
       double RAF, MAF;
       RAF = (0.5 * Y(i, 1) + Y(i, 2)) / (Y(i, 0) + Y(i, 1) + Y(i, 2));
+      
       if(RAF > 0.5) {
          MAF = 1.0 - RAF;
-         // swap geno
-         std::for_each(X.col(i).data(), X.col(i).data() + N, [&](double &geno) {
+        
+        // swap geno
+         std::for_each(X.col(i).data(), X.col(i).data() + N, [](double &geno) {
             if(geno != 3)
                geno = 2 - geno; // otherwise do nothing and keep NA as 3
          });
+
       } else {
          MAF = RAF;
       }
+      
       Y(i, 4) = MAF;
    }
 
@@ -158,8 +165,8 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A) {
    // A = X*X.transpose();
 
    // scale by number of non-missing genotypes 
-   for(int i = 0; i < N; i++){
-      for(int j = 0; j < N; j++){
+   for(int i = 0; i < N; i++) {
+      for(int j = 0; j < N; j++) {
          A(i,j) /= NM(i,j);
       }
    }
