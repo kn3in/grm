@@ -84,7 +84,7 @@ double swap_na(double x, double NA, double tol) {
          return out;
 } 
 
-void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A) {
+void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) {
  
    int N = X.rows();
    int nsnps = X.cols();
@@ -105,7 +105,7 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A) {
    
    // Calculate number of non-missing pairwise observations
    Eigen::MatrixXd NMG = Eigen::MatrixXd::Zero(N, nsnps);
-   Eigen::MatrixXd NM = Eigen::MatrixXd::Zero(N, N);
+   // Eigen::MatrixXd NM = Eigen::MatrixXd::Zero(N, N);
    // missing value is zero, one otherwise.
    for(int i = 0; i < N; i++) {
       for(int j = 0; j < nsnps; j++) {
