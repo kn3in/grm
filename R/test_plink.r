@@ -19,18 +19,30 @@ dim(mmap_geno)
 bim <- read.table("../data/test.bim", stringsAsFactors = FALSE)
 
 all.equal(bim$V2, colnames(my_geno))
-2 - mmap_geno[1:10,1:10]
-my_geno[1:10,1:10]
-
 colnames(mmap_geno) <- bim$V2
+mmap_geno[1:10,1:10]
+my_geno[1:10,1:10]
 
 all.equal(as.matrix(mmap_geno), my_geno, check.attributes = FALSE)
 
 pseudo_grm <- as.matrix(mmap_geno[1:10, ]) %*% t(as.matrix(mmap_geno[1:10, ]))
 
 
-t1 <- as.matrix(mmap_geno[1:10, ])
-t1[is.na(t1)] <- 0
-t1 %*% t(t1) /1000
+# t1 <- as.matrix(mmap_geno[1:10, ])
+# t1[is.na(t1)] <- 0
+# t1 %*% t(t1) /1000
 
 
+sum(is.na(my_geno[2, ]))
+
+maf(my_geno[4, ])
+
+
+non_miss <- mmap_geno
+ind <- !is.na(non_miss)
+non_miss[] <- 0
+non_miss[ind] <- 1
+
+t1 <- as.matrix(non_miss[1:10, ])
+t1 %*% t(t1)
+ %*% t(non_miss[1:10,])

@@ -14,7 +14,7 @@ read_GRMBin <- function(prefix, size = 4){
   NFile <- file(NFileName, "rb")
 
   ## read in the number of SNPs used to calculate the GRM (does not appear to work)
-  N <- readBin(NFile, n=1, what=numeric(0), size=size)
+  N <- readBin(NFile, n = n*(n+1)/2, what = numeric(0), size=size)
   i <- sapply(1:n, sum_i)
   
   ## clean up file connections
@@ -34,7 +34,14 @@ read_GRMBin <- function(prefix, size = 4){
   rownames(X) <- id$V2
   colnames(X) <- id$V2
 
-  return(X)
+  ##
+  diag_elem_N <- N[i]
+  off_diag_elem_N <- N[-i]
+  Y <- diag(diag_elem_N)
+  Y[ lower.tri(Y, diag = FALSE) ] <- off_diag_elem_N
+  Y <- Y + t(Y) - diag(diag(Y))
+
+  list(grm = X, non_missing = Y)
 }
 
 grm <- read_GRMBin("../bin/a")
@@ -70,24 +77,28 @@ sum(mmap_geno[2553, ] * mmap_geno[1860, ], na.rm = TRUE)
 
 
 
+maf <- function(geno) {
+  freq <- table(geno) / sum(!is.na(geno))
+  fq <- freq[1] + 0.5 * freq[2]
+  ifelse(fq > 0.5, 1 - fq, fq)
+}
+
+mean(apply(mmap_geno, 2, maf) < 0.05)
 
 
 
 
+n <- 3925
+tst <- readBin("../bin/a.grm.N.bin", n = n*(n+1)/2, what = numeric(0), size = 4)
 
 
 
 
+nm <- read.table("../bin/non_missing.txt", header = FALSE)
 
+index_nm_eq <- nm == grm$non_missing
 
-
-
-
-
-
-
-
-
+plot(grm$grm[index_nm_eq] / grm$non_missing[index_nm_eq], grmt$grm[index_nm_eq])
 
 
 
