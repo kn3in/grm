@@ -29,25 +29,25 @@ void decode_plink(unsigned char *out,
       geno = (tmp & MASK0);
       a1 = !(geno & 1);
       a2 = !(geno >> 1);
-      out[k] = (geno == 1) ? 3 : 2 - (a1 + a2);
+      out[k] = (geno == 1) ? 3 : (a1 + a2);
       k++;
 
       geno = (tmp & MASK1) >> 2; 
       a1 = !(geno & 1);
       a2 = !(geno >> 1);
-      out[k] = (geno == 1) ? 3 : 2 - (a1 + a2);
+      out[k] = (geno == 1) ? 3 : (a1 + a2);
       k++;
 
       geno = (tmp & MASK2) >> 4; 
       a1 = !(geno & 1);
       a2 = !(geno >> 1);
-      out[k] = (geno == 1) ? 3 : 2 - (a1 + a2);
+      out[k] = (geno == 1) ? 3 : (a1 + a2);
       k++;
 
       geno = (tmp & MASK3) >> 6; 
       a1 = !(geno & 1);
       a2 = !(geno >> 1);
-      out[k] = (geno == 1) ? 3 : 2 - (a1 + a2);
+      out[k] = (geno == 1) ? 3 : (a1 + a2);
    }
 }
 
@@ -150,7 +150,7 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A) {
       i_snp = (i_snp.array() - 2 * Y(i, 4)) / sqrt(2 * Y(i, 4) * (1 - Y(i, 4)));
       
       // NA value after centering and scaling, (before it was 3)
-      double NA = (3 - 2 * Y(i, 4)) / sqrt(Y(i, 4) * (1 - Y(i, 4)));
+      double NA = (3 - 2 * Y(i, 4)) / sqrt(2 * Y(i, 4) * (1 - Y(i, 4)));
      
       // set NAs to zero
       std::for_each(i_snp.data(), i_snp.data() + N, [&](double &d) {
