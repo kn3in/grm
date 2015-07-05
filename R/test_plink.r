@@ -7,9 +7,9 @@ my_geno <- as(geno$genotype, "numeric")
 my_geno[1:10,1:10]
 
 mmap_geno <- read.table("../bin/geno.txt", header = FALSE, sep = " ")
-mmap_geno[1:10,1:10]
 na_ind <- which(mmap_geno == 3L, arr.ind = TRUE)
 mmap_geno[na_ind] <- NA
+
 sum(is.na(my_geno))
 sum(is.na(mmap_geno))
 
@@ -23,26 +23,4 @@ colnames(mmap_geno) <- bim$V2
 mmap_geno[1:10,1:10]
 my_geno[1:10,1:10]
 
-all.equal(as.matrix(mmap_geno), my_geno, check.attributes = FALSE)
-
-pseudo_grm <- as.matrix(mmap_geno[1:10, ]) %*% t(as.matrix(mmap_geno[1:10, ]))
-
-
-# t1 <- as.matrix(mmap_geno[1:10, ])
-# t1[is.na(t1)] <- 0
-# t1 %*% t(t1) /1000
-
-
-sum(is.na(my_geno[2, ]))
-
-maf(my_geno[4, ])
-
-
-non_miss <- mmap_geno
-ind <- !is.na(non_miss)
-non_miss[] <- 0
-non_miss[ind] <- 1
-
-t1 <- as.matrix(non_miss[1:10, ])
-t1 %*% t(t1)
- %*% t(non_miss[1:10,])
+all.equal(2 - as.matrix(mmap_geno), my_geno, check.attributes = FALSE)
