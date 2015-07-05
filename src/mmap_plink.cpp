@@ -13,9 +13,9 @@
 int main () {
   int nindiv = 3925; // number of individuals as per test.fam
   int nsnps = 1000; // number of snps as per test.bim
-  Eigen::MatrixXd X(nindiv, nsnps);
-  Eigen::MatrixXd A(nindiv, nindiv);
-  Eigen::MatrixXd NM(nindiv, nindiv);
+  Eigen::MatrixXd X(nindiv, nsnps); // Genotype
+  Eigen::MatrixXd A(nindiv, nindiv); // GRM
+  Eigen::MatrixXd NM(nindiv, nindiv); // Number of non-missing SNPs per each individual pair
 
   struct stat sb;
   int fd = -1; // file descriptor
@@ -30,12 +30,8 @@ int main () {
   munmap(data, sb.st_size);
   close(fd);
 
-  // std::cout << X << std::endl;
-
   calculate_grm(X, A, NM);
   
-  // std::cout << A << std::endl;
-
   off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
   // std::cout << size << std::endl;
   int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
@@ -52,19 +48,16 @@ int main () {
   float* non_missing = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, nm_file, 0);
 
   int sum_up_toi = 0;
-  for(int i = 0; i < nindiv; ++i) {
+  for(int i = 0; i < nindiv; i++) {
     sum_up_toi += i;
-      for(int j = 0; j <= i; ++j) {
+      for(int j = 0; j <= i; j++) {
         grm[sum_up_toi + j] = (float)A(i,j);
         non_missing[sum_up_toi + j] = (float)NM(i,j);
     }
   }
-
+  
   munmap(grm, size);
   close(grm_file);
-  
-
-
 
   return 0;
 }

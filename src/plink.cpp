@@ -118,9 +118,7 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
    }
 
    NM = NMG * NMG.transpose();
-   
-   // std::cout << NM << std::endl;
-
+ 
    // Calculate reference allele frequency
    for(int i = 0; i < nsnps; i++) {
       
@@ -162,7 +160,6 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
    }
 
    A = Z * Z.transpose();
-   // A = X*X.transpose();
 
    // scale by number of non-missing genotypes 
    for(int i = 0; i < N; i++) {
@@ -171,37 +168,3 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
       }
    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
