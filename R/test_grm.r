@@ -38,7 +38,7 @@ read_GRMBin <- function(prefix, size = 4){
   diag_elem_N <- N[i]
   off_diag_elem_N <- N[-i]
   Y <- diag(diag_elem_N)
-  Y[ lower.tri(Y, diag = FALSE) ] <- off_diag_elem_N
+  Y[ upper.tri(Y, diag = FALSE) ] <- off_diag_elem_N
   Y <- Y + t(Y) - diag(diag(Y))
 
   list(grm = X, non_missing = Y)
@@ -51,8 +51,13 @@ grm_text <- read.table("../bin/grm.txt")
 grm_text <- as.matrix(grm_text)
 
 nm <- read.table("../bin/non_missing.txt", header = FALSE)
-
+nm <- as.matrix(nm)
 
 all.equal(grm$non_missing, grmt$non_missing)
 all.equal(grm$grm, grmt$grm)
-all.equal(grm$grm, as.matrix(grm_text), check.attributes = FALSE)
+plot(grm$grm, grmt$grm)
+
+
+all.equal(grm$non_missing, nm, check.attributes = FALSE)
+all.equal(grm$grm, grm_text, check.attributes = FALSE)
+plot(grm$grm, grm_text)

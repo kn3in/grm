@@ -20,7 +20,7 @@ bim <- read.table("../data/test.bim", stringsAsFactors = FALSE)
 
 all.equal(bim$V2, colnames(my_geno))
 colnames(mmap_geno) <- bim$V2
-mmap_geno[1:10,1:10]
+2 - mmap_geno[1:10,1:10]
 my_geno[1:10,1:10]
 
 all.equal(2 - as.matrix(mmap_geno), my_geno, check.attributes = FALSE)
