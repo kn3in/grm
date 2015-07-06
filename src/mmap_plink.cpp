@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <sys/mman.h>
 #include <cstdlib>
 #include <unistd.h>
@@ -29,9 +30,24 @@ int main () {
   
   munmap(data, sb.st_size);
   close(fd);
-
+  
+  // For testing only!
+  // std::ofstream file_geno("geno.txt", std::ios::out | std::ios::trunc);
+  // file_geno << X;
+  // file_geno.close();
+  
   calculate_grm(X, A, NM);
   
+  // For testing only!
+  // std::ofstream file_grm("grm.txt", std::ios::out | std::ios::trunc);
+  // file_grm << A;
+  // file_grm.close();
+  
+  // For testing only!
+  // std::ofstream file_nm("non_missing.txt", std::ios::out | std::ios::trunc);
+  // file_nm << NM;
+  // file_nm.close();
+
   off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
   // std::cout << size << std::endl;
   int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
