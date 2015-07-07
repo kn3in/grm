@@ -9,7 +9,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include "plink.hpp"
-
+#define PLINK_OFFSET 3
 
 int main () {
   int nindiv = 3925; // number of individuals as per test.fam
@@ -26,7 +26,7 @@ int main () {
   fstat(fd, &sb);
   data = (char*)mmap((caddr_t)0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
 
-  read_bed(data, X);
+  read_bed(data + PLINK_OFFSET, X);
   
   munmap(data, sb.st_size);
   close(fd);

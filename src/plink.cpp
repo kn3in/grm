@@ -2,7 +2,6 @@
 #include <math.h> 
 #include "plink.hpp"
 
-#define PLINK_OFFSET 3
 #define PACK_DENSITY 4
 /* 3 is 11 in binary, we need a 2 bit mask for each of the 4 positions */
 #define MASK0 3  /* 3 << 2 * 0 */
@@ -64,8 +63,8 @@ void read_bed(char* data, Eigen::MatrixXd& X){
    for(unsigned int j = 0 ; j < nsnps ; j++)
       {
          // read raw genotypes
-         std::copy(data + PLINK_OFFSET + (sizeof(char) * np) * j,
-                   data + PLINK_OFFSET + (sizeof(char) * np) * (j + 1), tmp);
+         std::copy(data + (sizeof(char) * np) * j,
+                   data + (sizeof(char) * np) * (j + 1), tmp);
 
          // decode the genotypes
          decode_plink(tmp2, tmp, np);
