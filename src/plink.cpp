@@ -160,10 +160,16 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
 
    A = Z * Z.transpose();
 
-   // scale by number of non-missing genotypes 
-   for(int i = 0; i < N; i++) {
-      for(int j = 0; j < N; j++) {
-         A(i,j) /= NM(i,j);
-      }
-   }
+   // // scale by number of non-missing genotypes 
+   // for(int i = 0; i < N; i++) {
+   //    for(int j = 0; j < N; j++) {
+   //       A(i,j) /= NM(i,j);
+   //    }
+   // }
+}
+
+void update_grm(Eigen::MatrixXd& A, Eigen::MatrixXd& NM,
+               Eigen::MatrixXd& Ai, Eigen::MatrixXd& NMi) {
+   A  = A + Ai;
+   NM = NM + NMi;
 }
