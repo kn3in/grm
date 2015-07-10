@@ -35,15 +35,9 @@ int main () {
   
   int chunks = ceil( (double)nsnps / chunk_size);
   int last_chunk = nsnps % chunk_size; 
-
-  // std::cout << chunks << std::endl;
-  // std::cout << last_chunk << std::endl;
   
   std::vector<int> snps_per_chunk(chunks, chunk_size);
   snps_per_chunk.back() = last_chunk;
-
-  // int tot_snps = std::accumulate(snps_per_chunk.begin(), snps_per_chunk.end(), 0);
-  // std::cout << tot_snps << std::endl;
 
   for(int i = 0; i < snps_per_chunk.size(); ++i) {
     int n_snps = snps_per_chunk.front(); // last chunk start is still multiple of big chunks!!! 
@@ -53,10 +47,6 @@ int main () {
     start_index_of_chunk.push_back(start_index);
   }
 
-  // for(std::vector<int>::iterator it = start_index_of_chunk.begin(); it != start_index_of_chunk.end(); it++ ) {
-  //   std::cout << *it << " " << std::endl;
-  // }
-
   for(int i = 0; i < snps_per_chunk.size(); ++i) {
     Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
     Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
@@ -64,47 +54,8 @@ int main () {
 
     read_bed(data + start_index_of_chunk[i], Xi);
     calculate_grm(Xi, Ai, NMi);
-    
     update_grm(A, NM, Ai, NMi);
-
-    // Testing only
-    // printf("Current address of a chunk is : %p \n", data + start_index_of_chunk[i]);
-
-    // std::string out_file = "geno" + std::to_string(i) + ".txt";
-    // std::ofstream file_geno(out_file.c_str(), std::ios::out | std::ios::trunc);
-    // file_geno << Xi;
-    // file_geno.close();
-
   }
-  
-
-  // Eigen::MatrixXd Xi(nindiv, snps_per_chunk[1]); // Genotype
-  // Eigen::MatrixXd Ai(nindiv, nindiv); // GRM
-  // Eigen::MatrixXd NMi(nindiv, nindiv); // Number of non-missing SNPs per each individual pair
-
-  // read_bed(data + start_index_of_chunk[1], Xi);
-  // // std::cout << Xi << std::endl;
-  
-  // calculate_grm(Xi, Ai, NMi);
-  // std::cout << Ai << std::endl;
-
-   
-  // for(int chunk = 0; (chunk + 1) * chunk_size <= nsnps; chunk++) {
-  //   current_size = chunk * chunk_size ? chunk_size : nsnps - (chunk - 1) * chunk_size;
-  //   snps_per_chunk.push_back(current_size);
-  // }
-
-    // unsigned int np, chunk_memory;
-    // np = (unsigned int)ceil((double)N / PACK_DENSITY);
-    
-    // chunk_memory = chunk * chunk_size * ;
-
-    // p_to_chunk_start.push_back(data + PLINK_OFFSET + chunk_memory)
-
-
-  // read_bed(data + PLINK_OFFSET, X);
-
-
   
   munmap(data, sb.st_size);
   close(fd);
@@ -115,23 +66,6 @@ int main () {
          A(i,j) /= NM(i,j);
       }
    }
-
-  // For testing only!
-  // std::ofstream file_geno("geno.txt", std::ios::out | std::ios::trunc);
-  // file_geno << X;
-  // file_geno.close();
-  
-  // calculate_grm(X, A, NM);
-  
-  // For testing only!
-  // std::ofstream file_grm("grm.txt", std::ios::out | std::ios::trunc);
-  // file_grm << A;
-  // file_grm.close();
-  
-  // For testing only!
-  // std::ofstream file_nm("non_missing.txt", std::ios::out | std::ios::trunc);
-  // file_nm << NM;
-  // file_nm.close();
 
   off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
   // std::cout << size << std::endl;
