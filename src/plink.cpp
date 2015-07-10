@@ -94,14 +94,6 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
    // standardized genotype matrix
    Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(N, nsnps);
       
-   // count number of individuals per genotype class
-   for(int i = 0; i < nsnps; i++) {
-      Eigen::VectorXd i_snp = X.col(i);
-      for(int j = 0; j < N; j++) {
-         Y(i, i_snp[j])++;
-      }
-   }
-   
    // Calculate number of non-missing pairwise observations
    Eigen::MatrixXd NMG = Eigen::MatrixXd::Zero(N, nsnps);
    // Eigen::MatrixXd NM = Eigen::MatrixXd::Zero(N, N);
@@ -118,6 +110,32 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
 
    NM = NMG * NMG.transpose();
  
+   scale_and_center_genotype(X, Z);
+   A = Z * Z.transpose();
+}
+
+void update_grm(Eigen::MatrixXd& A, Eigen::MatrixXd& NM,
+               Eigen::MatrixXd& Ai, Eigen::MatrixXd& NMi) {
+   A  = A + Ai;
+   NM = NM + NMi;
+}
+
+void scale_and_center_genotype(Eigen::MatrixXd& X, Eigen::MatrixXd& Z) {
+   
+   int N = X.rows();
+   int nsnps = X.cols();
+
+   // columns are genotype classes 0, 1, 2, 3(NA), frequency of the reference allele
+   Eigen::MatrixXd Y = Eigen::MatrixXd::Zero(nsnps, 5);
+   
+   // count number of individuals per genotype class
+   for(int i = 0; i < nsnps; i++) {
+      Eigen::VectorXd i_snp = X.col(i);
+      for(int j = 0; j < N; j++) {
+         Y(i, i_snp[j])++;
+      }
+   }
+
    // Calculate reference allele frequency
    for(int i = 0; i < nsnps; i++) {
       
@@ -158,11 +176,17 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
       Z.col(i) = i_snp;
    }
 
-   A = Z * Z.transpose();
 }
 
-void update_grm(Eigen::MatrixXd& A, Eigen::MatrixXd& NM,
-               Eigen::MatrixXd& Ai, Eigen::MatrixXd& NMi) {
-   A  = A + Ai;
-   NM = NM + NMi;
-}
+
+
+
+
+
+
+
+
+
+
+
+
