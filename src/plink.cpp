@@ -87,29 +87,11 @@ void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) 
  
    int N = X.rows();
    int nsnps = X.cols();
-
-   // columns are genotype classes 0, 1, 2, 3(NA), frequency of the reference allele
-   Eigen::MatrixXd Y = Eigen::MatrixXd::Zero(nsnps, 5);
-   
+ 
    // standardized genotype matrix
    Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(N, nsnps);
       
-   // Calculate number of non-missing pairwise observations
-   Eigen::MatrixXd NMG = Eigen::MatrixXd::Zero(N, nsnps);
-   // Eigen::MatrixXd NM = Eigen::MatrixXd::Zero(N, N);
-   // missing value is zero, one otherwise.
-   for(int i = 0; i < N; i++) {
-      for(int j = 0; j < nsnps; j++) {
-         if(X(i,j) != 3.0) {
-            NMG(i,j) = 1.0;
-         } else {
-            NMG(i,j) = 0.0;
-         }
-      }
-   }
-
-   NM = NMG * NMG.transpose();
- 
+   count_non_missing(X, NM);
    scale_and_center_genotype(X, Z);
    A = Z * Z.transpose();
 }
@@ -178,7 +160,25 @@ void scale_and_center_genotype(Eigen::MatrixXd& X, Eigen::MatrixXd& Z) {
 
 }
 
+void count_non_missing(Eigen::MatrixXd& X, Eigen::MatrixXd& NM) {
+   int N = X.rows();
+   int nsnps = X.cols();
+   
+   Eigen::MatrixXd NMG = Eigen::MatrixXd::Zero(N, nsnps);
+   
+   // missing value is zero, one otherwise.
+   for(int i = 0; i < N; i++) {
+      for(int j = 0; j < nsnps; j++) {
+         if(X(i,j) != 3.0) {
+            NMG(i,j) = 1.0;
+         } else {
+            NMG(i,j) = 0.0;
+         }
+      }
+   }
 
+   NM = NMG * NMG.transpose();
+}
 
 
 
