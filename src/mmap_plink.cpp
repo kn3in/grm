@@ -61,11 +61,11 @@ int main () {
   close(fd);
   
    // scale by number of non-missing genotypes 
-   for(int i = 0; i < nindiv; i++) {
-      for(int j = 0; j < nindiv; j++) {
-         A(i,j) /= NM(i,j);
-      }
-   }
+   // for(int i = 0; i < nindiv; i++) {
+   //    for(int j = 0; j < nindiv; j++) {
+   //       A(i,j) /= NM(i,j);
+   //    }
+   // }
 
   off_t size = sizeof(double) * nindiv * (nindiv + 1) / 2;
   // std::cout << size << std::endl;
@@ -88,6 +88,15 @@ int main () {
       for(int j = 0; j <= i; j++) {
         grm[sum_up_toi + j] = A(i,j);
         non_missing[sum_up_toi + j] = NM(i,j);
+    }
+  }
+
+  // scale by the number of non-missing but utilize mmap'ed arrays
+  sum_up_toi = 0;
+  for(int i = 0; i < nindiv; i++) {
+    sum_up_toi += i;
+      for(int j = 0; j <= i; j++) {
+        grm[sum_up_toi + j] =  grm[sum_up_toi + j] / non_missing[sum_up_toi + j];
     }
   }
   
