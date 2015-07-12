@@ -67,7 +67,7 @@ int main () {
       }
    }
 
-  off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
+  off_t size = sizeof(double) * nindiv * (nindiv + 1) / 2;
   // std::cout << size << std::endl;
   int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   int nm_file = open("a.grm.N.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
@@ -79,15 +79,15 @@ int main () {
   result2 = write(nm_file, "", 1);
 
 
-  float* grm = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, grm_file, 0);
-  float* non_missing = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, nm_file, 0);
+  double* grm = (double*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, grm_file, 0);
+  double* non_missing = (double*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, nm_file, 0);
 
   int sum_up_toi = 0;
   for(int i = 0; i < nindiv; i++) {
     sum_up_toi += i;
       for(int j = 0; j <= i; j++) {
-        grm[sum_up_toi + j] = (float)A(i,j);
-        non_missing[sum_up_toi + j] = (float)NM(i,j);
+        grm[sum_up_toi + j] = A(i,j);
+        non_missing[sum_up_toi + j] = NM(i,j);
     }
   }
   
