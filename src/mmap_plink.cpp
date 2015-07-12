@@ -19,8 +19,8 @@ int main () {
   int nindiv = 3925; // number of individuals as per test.fam
   int nsnps = 1000; // number of snps as per test.bim
   // Eigen::MatrixXd X(nindiv, nsnps); // Genotype
-  Eigen::MatrixXd A(nindiv, nindiv); // GRM
-  Eigen::MatrixXd NM(nindiv, nindiv); // Number of non-missing SNPs per each individual pair
+  // Eigen::MatrixXd A(nindiv, nindiv); // GRM
+  // Eigen::MatrixXd NM(nindiv, nindiv); // Number of non-missing SNPs per each individual pair
 
   struct stat sb;
   int fd = -1; // file descriptor
@@ -46,19 +46,6 @@ int main () {
     unsigned int start_index = PLINK_OFFSET + (sizeof(char) * np) * n_snps * i;
     start_index_of_chunk.push_back(start_index);
   }
-
-  for(int i = 0; i < snps_per_chunk.size(); ++i) {
-    Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
-    Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
-    Eigen::MatrixXd NMi(nindiv, nindiv); // current Number of non-missing SNPs
-
-    read_bed(data + start_index_of_chunk[i], Xi);
-    calculate_grm(Xi, Ai, NMi);
-    update_grm(A, NM, Ai, NMi);
-  }
-  
-  munmap(data, sb.st_size);
-  close(fd);
   
    // scale by number of non-missing genotypes 
    // for(int i = 0; i < nindiv; i++) {
@@ -82,14 +69,39 @@ int main () {
   double* grm = (double*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, grm_file, 0);
   double* non_missing = (double*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, nm_file, 0);
 
+  // fill mmaped files with zeros, need better way of doing this!!!
   int sum_up_toi = 0;
-  for(int i = 0; i < nindiv; i++) {
-    sum_up_toi += i;
-      for(int j = 0; j <= i; j++) {
-        grm[sum_up_toi + j] = A(i,j);
-        non_missing[sum_up_toi + j] = NM(i,j);
-    }
+    for(int i = 0; i < nindiv; i++) {
+      sum_up_toi += i;
+        for(int j = 0; j <= i; j++) {
+          grm[sum_up_toi + j] = 0.0;
+          non_missing[sum_up_toi + j] = 0.0;
+      }
   }
+
+  for(int i = 0; i < snps_per_chunk.size(); ++i) {
+    Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
+    Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
+    Eigen::MatrixXd NMi(nindiv, nindiv); // current Number of non-missing SNPs
+
+    read_bed(data + start_index_of_chunk[i], Xi);
+    calculate_grm(Xi, Ai, NMi);
+
+    // update GRM and non-missing in place
+    sum_up_toi = 0;
+    for(int i = 0; i < nindiv; i++) {
+      sum_up_toi += i;
+        for(int j = 0; j <= i; j++) {
+          grm[sum_up_toi + j] = grm[sum_up_toi + j] + Ai(i,j);
+          non_missing[sum_up_toi + j] = non_missing[sum_up_toi + j] + NMi(i,j);
+      }
+    }  
+    
+    // update_grm(A, NM, Ai, NMi);
+  }
+  
+  munmap(data, sb.st_size);
+  close(fd);
 
   // scale by the number of non-missing but utilize mmap'ed arrays
   sum_up_toi = 0;
