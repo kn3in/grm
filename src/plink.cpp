@@ -233,7 +233,21 @@ void crossprod_low_tri(Eigen::MatrixXd& Z, double *grm) {
 
 }
 
-
+void count_non_missing3(Eigen::MatrixXd& X, Eigen::MatrixXd& NMG){
+   int N = X.rows();
+   int nsnps = X.cols();
+      
+   // missing value is zero, one otherwise.
+   for(int i = 0; i < N; i++) {
+      for(int j = 0; j < nsnps; j++) {
+         if(X(i,j) != 3.0) {
+            NMG(i,j) = 1.0;
+         } else {
+            NMG(i,j) = 0.0;
+         }
+      }
+   }
+}
 
 
 

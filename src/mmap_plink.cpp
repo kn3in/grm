@@ -72,25 +72,31 @@ int main () {
       }
   }
   
-  int size_low_tri = nindiv * (nindiv + 1) / 2;
+  // int size_low_tri = nindiv * (nindiv + 1) / 2;
   
   for(int i = 0; i < snps_per_chunk.size(); ++i) {
     Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
     read_bed(data + start_index_of_chunk[i], Xi);
+    
+    int N = Xi.rows();
+    int nsnps = Xi.cols();
 
-    double* grm_i = new double[size_low_tri];
-    double* nm_i = new double[size_low_tri];
+    Eigen::MatrixXd Zi = Eigen::MatrixXd::Zero(N, nsnps); // current scaled-centered genotype
+    Eigen::MatrixXd NMGi = Eigen::MatrixXd::Zero(N, nsnps); // current non-missing
+    
+    count_non_missing3(Xi, NMGi);
+    scale_and_center_genotype(Xi, Zi);
 
-    calculate_grm2(Xi, grm_i, nm_i);
-
-    // update 
-    for(int k = 0; k < size_low_tri; k++) {
-      grm[k] = grm[k] + grm_i[k];
-      non_missing[k] = non_missing[k] + nm_i[k];
-    }
-
-    delete[] grm_i;
-    delete[] nm_i;
+    sum_up_toi = 0;
+    for(int i = 0; i < N; i++) {
+      sum_up_toi += i;
+        for(int j = 0; j <= i; j++) {
+         
+          grm[sum_up_toi + j] = grm[sum_up_toi + j] + (Zi.row(i)).dot(Zi.row(j));
+          non_missing[sum_up_toi + j] = non_missing[sum_up_toi + j] + (NMGi.row(i)).dot(NMGi.row(j));
+      
+      }
+   }
 
   }
   

@@ -9,3 +9,4 @@ void count_non_missing(Eigen::MatrixXd&, Eigen::MatrixXd&);
 void calculate_grm2(Eigen::MatrixXd&, double*, double*);
 void count_non_missing2(Eigen::MatrixXd&, double*);
 void crossprod_low_tri(Eigen::MatrixXd&, double*);
+void count_non_missing3(Eigen::MatrixXd&, Eigen::MatrixXd&);
