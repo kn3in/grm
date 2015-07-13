@@ -181,7 +181,57 @@ void count_non_missing(Eigen::MatrixXd& X, Eigen::MatrixXd& NM) {
 }
 
 
+void calculate_grm2(Eigen::MatrixXd& X, double *grm, double *nm) {
+   int N = X.rows();
+   int nsnps = X.cols();
+ 
+   // standardized genotype matrix
+   Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(N, nsnps);
+      
+   count_non_missing2(X, nm);
+ 
+   scale_and_center_genotype(X, Z);
+ 
+   crossprod_low_tri(Z, grm);
 
+}
+
+void count_non_missing2(Eigen::MatrixXd& X, double *nm) {
+   int N = X.rows();
+   int nsnps = X.cols();
+   
+   Eigen::MatrixXd NMG = Eigen::MatrixXd::Zero(N, nsnps);
+   
+   // missing value is zero, one otherwise.
+   for(int i = 0; i < N; i++) {
+      for(int j = 0; j < nsnps; j++) {
+         if(X(i,j) != 3.0) {
+            NMG(i,j) = 1.0;
+         } else {
+            NMG(i,j) = 0.0;
+         }
+      }
+   }
+
+   crossprod_low_tri(NMG, nm);
+
+}
+
+void crossprod_low_tri(Eigen::MatrixXd& Z, double *grm) {
+   int N = Z.rows();
+   
+   int sum_up_toi = 0;
+    for(int i = 0; i < N; i++) {
+      sum_up_toi += i;
+        for(int j = 0; j <= i; j++) {
+         
+          grm[sum_up_toi + j] = (Z.row(i)).dot(Z.row(j));
+          
+      
+      }
+   }
+
+}
 
 
 

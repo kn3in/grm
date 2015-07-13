@@ -47,13 +47,6 @@ int main () {
     start_index_of_chunk.push_back(start_index);
   }
   
-   // scale by number of non-missing genotypes 
-   // for(int i = 0; i < nindiv; i++) {
-   //    for(int j = 0; j < nindiv; j++) {
-   //       A(i,j) /= NM(i,j);
-   //    }
-   // }
-
   off_t size = sizeof(double) * nindiv * (nindiv + 1) / 2;
   // std::cout << size << std::endl;
   int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
@@ -78,26 +71,27 @@ int main () {
           non_missing[sum_up_toi + j] = 0.0;
       }
   }
-
+  
+  int size_low_tri = nindiv * (nindiv + 1) / 2;
+  
   for(int i = 0; i < snps_per_chunk.size(); ++i) {
     Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
-    Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
-    Eigen::MatrixXd NMi(nindiv, nindiv); // current Number of non-missing SNPs
-
     read_bed(data + start_index_of_chunk[i], Xi);
-    calculate_grm(Xi, Ai, NMi);
 
-    // update GRM and non-missing in place
-    sum_up_toi = 0;
-    for(int i = 0; i < nindiv; i++) {
-      sum_up_toi += i;
-        for(int j = 0; j <= i; j++) {
-          grm[sum_up_toi + j] = grm[sum_up_toi + j] + Ai(i,j);
-          non_missing[sum_up_toi + j] = non_missing[sum_up_toi + j] + NMi(i,j);
-      }
-    }  
-    
-    // update_grm(A, NM, Ai, NMi);
+    double* grm_i = new double[size_low_tri];
+    double* nm_i = new double[size_low_tri];
+
+    calculate_grm2(Xi, grm_i, nm_i);
+
+    // update 
+    for(int k = 0; k < size_low_tri; k++) {
+      grm[k] = grm[k] + grm_i[k];
+      non_missing[k] = non_missing[k] + nm_i[k];
+    }
+
+    delete[] grm_i;
+    delete[] nm_i;
+
   }
   
   munmap(data, sb.st_size);
