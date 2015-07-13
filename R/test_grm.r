@@ -44,8 +44,8 @@ read_GRMBin <- function(prefix, size = 4){
   list(grm = X, non_missing = Y)
 }
 
-grm <- read_GRMBin("../bin/a")
-grmt <- read_GRMBin("../data/gcta")
+grm <- read_GRMBin("../bin/a", size = 8)
+grmt <- read_GRMBin("../data/gcta", size = 4)
 
 grm_text <- read.table("../bin/grm.txt")
 grm_text <- as.matrix(grm_text)
