@@ -91,8 +91,10 @@ int main () {
     Eigen::MatrixXd NMGi_t = NMGi.transpose();
     
     sum_up_toi = 0;
+    // #pragma omp parallel for
     for(int i = 0; i < N; i++) {
       sum_up_toi += i;
+      #pragma omp parallel for
       for(int j = 0; j <= i; j++) {
          
           grm[sum_up_toi + j] = grm[sum_up_toi + j] + (Zi_t.col(i)).dot(Zi_t.col(j));
