@@ -37,7 +37,7 @@ int main () {
   int last_chunk = nsnps % chunk_size; 
   
   std::vector<int> snps_per_chunk(chunks, chunk_size);
-  snps_per_chunk.back() = last_chunk;
+  if(last_chunk) snps_per_chunk.back() = last_chunk;
 
   for(int i = 0; i < snps_per_chunk.size(); ++i) {
     int n_snps = snps_per_chunk.front(); // last chunk start is still multiple of big chunks!!! 
