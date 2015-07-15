@@ -87,13 +87,16 @@ int main () {
     count_non_missing3(Xi, NMGi);
     scale_and_center_genotype(Xi, Zi);
 
+    Eigen::MatrixXd Zi_t = Zi.transpose();
+    Eigen::MatrixXd NMGi_t = NMGi.transpose();
+    
     sum_up_toi = 0;
     for(int i = 0; i < N; i++) {
       sum_up_toi += i;
-        for(int j = 0; j <= i; j++) {
+      for(int j = 0; j <= i; j++) {
          
-          grm[sum_up_toi + j] = grm[sum_up_toi + j] + (Zi.row(i)).dot(Zi.row(j));
-          non_missing[sum_up_toi + j] = non_missing[sum_up_toi + j] + (NMGi.row(i)).dot(NMGi.row(j));
+          grm[sum_up_toi + j] = grm[sum_up_toi + j] + (Zi_t.col(i)).dot(Zi_t.col(j));
+          non_missing[sum_up_toi + j] = non_missing[sum_up_toi + j] + (NMGi_t.col(i)).dot(NMGi_t.col(j));
       
       }
    }
