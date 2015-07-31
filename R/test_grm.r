@@ -61,3 +61,27 @@ plot(grm$grm, grmt$grm)
 all.equal(grm$non_missing, nm, check.attributes = FALSE)
 all.equal(grm$grm, grm_text, check.attributes = FALSE)
 plot(grm$grm, grm_text)
+
+
+grm_mc <- read_GRMBin("../bin/test1_out")
+
+grm_gt <- read.table("../data/test1_lowertri")
+grm_gtf <- read.table("../data/test1_GRM")
+dim(grm_gt)
+
+Z <- diag(20)
+
+Z[ upper.tri(Z, diag = TRUE) ] <- grm_gt$V3
+Z <- Z + t(Z) - diag(diag(Z)) 
+
+
+plot(grm_mc$grm, as.matrix(grm_gtf))
+all.equal(grm_mc$grm, as.matrix(grm_gtf), check.attributes = FALSE)
+dim(grm_mc$grm)
+dim(grm_gtf)
+
+
+
+
+
+

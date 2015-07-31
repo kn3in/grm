@@ -12,32 +12,79 @@
 #include <vector>
 #include <Eigen/Dense>
 #include "plink.hpp"
+#include "betas.hpp"
+#include "plink_data.hpp"
+
 #define PLINK_OFFSET 3
 #define PACK_DENSITY 4
 
-int main () {
-  int nindiv = 3925; // number of individuals as per test.fam
-  int nsnps = 1000; // number of snps as per test.bim
+int main (int argc, char* argv[]) {
+  
+  std::string usage("USAGE: ./mmap_plink plink_data betas_data out_name");
+    
+  if(argc != 4) {
+    std::cerr << usage << std::endl;
+      return 1;
+  }
+  
+  std::string plink_base = argv[1];
+  std::string bim_file = plink_base + ".bim";
+  std::string fam_file = plink_base + ".fam";
+  std::string bed_file = plink_base + ".bed";
+
+  std::string my_betas_path = argv[2];
+  std::string results_file = argv[3];
+
+  std::string grm_bin = results_file + ".grm.bin";
+  std::string grm_n = results_file + ".grm.N.bin";
+  std::string grm_id = results_file + ".grm.id";
+  std::string g_pred = results_file + "_gpredictor.txt";
+
+  //-----------------------------------------------------------------------------
+  
+  betas my_betas(my_betas_path);
+  bim_data bim(bim_file);
+  fam_data fam(fam_file);
+
+  // which snps present only in the bed and not in the betas file?
+  bim.setup_snps_without_betas(my_betas);
+  // set up <bool> vector to decide which SNPs are in common between bed adn betas files
+  bim.setup_snps_to_iterate();
+  // itereate over SNPs common between bed/betas files and swap sign of the effect size if reference alleles differ 
+  my_betas.swap_betas(bim);
+
+
+
+
+  //-----------------------------------------------------------------------------
+  
+  int nindiv = fam.nindiv; // number of individuals as per test.fam
+  int nsnps = bim.nsnps; // number of snps as per test.bim
   // Eigen::MatrixXd X(nindiv, nsnps); // Genotype
   Eigen::MatrixXd A(nindiv, nindiv); // GRM
   Eigen::MatrixXd NM(nindiv, nindiv); // Number of non-missing SNPs per each individual pair
+  Eigen::VectorXd g_hat(nindiv); // genetic effects aka row sums
+
+  A.setZero();
+  NM.setZero();
+  g_hat.setZero();
 
   struct stat sb;
   int fd = -1; // file descriptor
   char* data = NULL;
 
-  fd = open("../data/test.bed", O_RDONLY);
+  fd = open(bed_file.c_str(), O_RDONLY);
   fstat(fd, &sb);
   data = (char*)mmap((caddr_t)0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
 
-  int chunk_size = 89; // SNPs to read in RAM at a time
+  int chunk_size = nsnps; // SNPs to read in RAM at a time
   std::vector<int> start_index_of_chunk;
   
   int chunks = ceil( (double)nsnps / chunk_size);
   int last_chunk = nsnps % chunk_size; 
   
   std::vector<int> snps_per_chunk(chunks, chunk_size);
-  snps_per_chunk.back() = last_chunk;
+  if(last_chunk) snps_per_chunk.back() = last_chunk; // Fix it with if()
 
   for(int i = 0; i < snps_per_chunk.size(); ++i) {
     int n_snps = snps_per_chunk.front(); // last chunk start is still multiple of big chunks!!! 
@@ -49,12 +96,62 @@ int main () {
 
   for(int i = 0; i < snps_per_chunk.size(); ++i) {
     Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
+    Eigen::MatrixXd NMGi(nindiv, snps_per_chunk[i]); //current non-missing->1 NA->0
     Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
     Eigen::MatrixXd NMi(nindiv, nindiv); // current Number of non-missing SNPs
 
+    Eigen::VectorXd betas(snps_per_chunk[i]); // current betas    
+    betas.setZero();
+
     read_bed(data + start_index_of_chunk[i], Xi);
-    calculate_grm(Xi, Ai, NMi);
+    // std::cout << "Xi as read in: " << std::endl;
+    // std::cout << Xi << std::endl;
+    //------------------------------------------------------------------------
+    //zeroing betas of non-overlapping SNPs
+    
+    int down = i * snps_per_chunk.front();
+    int up = down + snps_per_chunk[i];
+    
+    for(int j = down; j < up; j++) {
+      int local_i = j - down;
+      if(bim.snps_to_use[j]) {
+        int betas_ind = my_betas.rs_id2index[ bim.bim_rs_id[j] ];
+        betas[local_i] = my_betas.effects[betas_ind];
+      } else {
+        // genotypes of all SNPs which do NOT have betas set to 3 (NA value)
+        Xi.col(local_i) = Eigen::VectorXd::Constant(nindiv, 3);
+      }    
+    }
+
+    // std::cout << "Xi 3 if missing in betas: " << std::endl;
+    // std::cout << Xi << std::endl;
+    // std::cout << betas << std::endl;
+
+    count_non_missing(Xi, NMi, NMGi); // NMGi keeps track of missing values!
+    swap_na_matrix(Xi); // all NA turns into zero
+ 
+    // std::cout << "Xi 0 if missing: " << std::endl;
+    // std::cout << Xi << std::endl;
+
+    //------------------------------------------------------------------------
+    // change Xi to genotype * effect_size
+    for(int l = 0; l < Xi.cols(); l++) {
+      // so in principle I can keep here betas as
+      // any type of container as long as [i] will give me a double
+      Xi.col(l) = Xi.col(l) * betas[l]; 
+    }
+
+    // std::cout << "Xi multtiplied by betas: " << std::endl;
+    // std::cout << Xi << std::endl;
+
+
+    // effects per individual
+    g_hat += Xi.rowwise().sum(); 
+
+    calculate_grm2(Xi, Ai, NMGi);
+    // calculate_grm3(Xi, Ai);
     update_grm(A, NM, Ai, NMi);
+    
   }
   
   munmap(data, sb.st_size);
@@ -63,14 +160,14 @@ int main () {
    // scale by number of non-missing genotypes 
    for(int i = 0; i < nindiv; i++) {
       for(int j = 0; j < nindiv; j++) {
-         A(i,j) /= NM(i,j);
+         A(i,j) /= NM(i,j) - 1;
       }
    }
 
   off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
   // std::cout << size << std::endl;
-  int grm_file = open("a.grm.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int nm_file = open("a.grm.N.bin", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  int grm_file = open(grm_bin.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  int nm_file = open(grm_n.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   
   int result = lseek(grm_file, size - 1, SEEK_SET);
   result = write(grm_file, "", 1);
@@ -93,6 +190,17 @@ int main () {
   
   munmap(grm, size);
   close(grm_file);
+
+  std::ofstream id_grm(grm_id);
+  std::ofstream g_eff(g_pred);
+
+
+  for(int i = 0; i < fam.individual_id.size(); i++) {
+    id_grm << i + 1 << "\t" << fam.individual_id[i] << "\n";
+    g_eff << fam.family_id[i] << "\t" << fam.individual_id[i] << "\t" << g_hat[i] << "\n";
+  }
+
+  // std::cout << g_hat << std::endl;
 
   return 0;
 }
