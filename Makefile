@@ -1,2 +1,4 @@
 build:
-	c++ -std=c++11 -fno-inline -g -Wall src/mmap_plink.cpp src/plink.cpp -o bin/mmap_plink -I eigen325
+	c++ -std=c++11 -fno-inline -g -Wall -Wextra \
+	src/mmap_plink.cpp src/plink.cpp src/betas.cpp src/plink_data.cpp \
+	-o bin/bgrm -I eigen325

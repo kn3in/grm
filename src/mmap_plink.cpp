@@ -20,7 +20,7 @@
 
 int main (int argc, char* argv[]) {
   
-  std::string usage("USAGE: ./mmap_plink plink_data betas_data out_name");
+  std::string usage("USAGE: bgrm plink_data betas_data out_name");
     
   if(argc != 4) {
     std::cerr << usage << std::endl;
