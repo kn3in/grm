@@ -48,7 +48,16 @@ bim_data::bim_data(std::string path_to_bim_file) {
 
    if(bim_rs_id.size() != rs_id2index.size()) {
     // map size will be smaller if duplicated rs ids used as keys
-   	throw std::runtime_error("Runtime error: duplicated SNP ids in the bim file");
+   	std::cout << bim_rs_id.size() << std::endl;
+      std::cout << rs_id2index.size() << std::endl;
+
+      for(std::map<std::string, int>::iterator it = rs_id2index.begin(); it != rs_id2index.end(); it++) {
+         std::cout << it->first << std::endl;
+      }
+
+
+
+      throw std::runtime_error("Runtime error: duplicated SNP ids in the bim file");
    	
    }
   

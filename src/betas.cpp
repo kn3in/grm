@@ -39,7 +39,7 @@ betas::betas(std::string full_path) {
    if(snps.size() != rs_id2index.size()) {
     // map size will be smaller if duplicated rs ids used as keys
       throw std::runtime_error("Runtime error: duplicated SNP ids in the betas file");
-      
+
    }
 }
 
@@ -51,20 +51,18 @@ void betas::swap_betas(const bim_data& bim) {
    for(int i = 0; i < bim.snps_to_use.size(); i++) {
       if(bim.snps_to_use[i]) {
          int beta_index = rs_id2index[ bim.bim_rs_id[i] ];
-
-            if(bim.bim_ref_all[i] != alleles[beta_index]) {
-               // alternative should be the same as in betas file
-               if(bim.bim_another_all[i] != alleles[beta_index]) {
-                  throw std::runtime_error("Runtime error: neither reference nor alternative alleles for SNP: " + bim.bim_ref_all[i] + "agree with the allele provided in the betas file");
-               }
-               
-               // swap sign for effect size otherwise do nothing
-               effects[beta_index] = -effects[beta_index];
+         if(bim.bim_ref_all[i] != alleles[beta_index]) {
+            // alternative should be the same as in betas file
+            if(bim.bim_another_all[i] != alleles[beta_index]) {
+               throw std::runtime_error("Runtime error: neither reference nor alternative alleles for SNP: " +
+                                        bim.bim_ref_all[i] +
+                                        "agree with the allele provided in the betas file");
             }
-
+            // swap sign for effect size otherwise do nothing
+            effects[beta_index] = -effects[beta_index];
+         }
       }
-    }
-
+   }
 }
 
 
