@@ -235,67 +235,25 @@ void swap_na_mm(Eigen::MatrixXd& X, Eigen::MatrixXd& NMG) {
 // supposse no SNPs is missing
 void calculate_grm3(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai) {
    
-   Eigen::VectorXd Mean = Xi.colwise().sum() / Xi.rows();
    // center
+   Eigen::VectorXd Mean = Xi.colwise().sum() / Xi.rows();
    Xi.rowwise() -= Mean.transpose();
    
-   // std::cout << "Col means are = " << std::endl;   
-   // std::cout << Xi.colwise().sum() / Xi.rows() << std::endl;
-
+   // Scale
    Eigen::VectorXd Sd = Xi.colwise().norm() / sqrt(Xi.rows() - 1);
-   
-   // Eigen::VectorXd v(10);
-   // Eigen::VectorXd centerred(µ);
 
-   // v << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
-   // centerred = v.array() - 5.5;
-
-   // std::cout << "test on what is SD" << std::endl;
-   // std::cout << (centerred.norm() / sqrt(9)) << std::endl;
-   
-   // Eigen::MatrixXd Test(4,3);
-   // Test << 1, 2, 3,
-   //         4, 5, 6, 
-   //         7, 8, 9,
-   //         0, 2, 10;
-   // std::cout << Test << std::endl;
-
-   // Eigen::VectorXd Test_Mean = Test.colwise().sum() / Test.rows();
-   // Test.rowwise() -= Test_Mean.transpose();
-   // Eigen::VectorXd Test_Sd = Test.colwise().norm() / sqrt(Test.rows() - 1);
-   
-   // for(int i = 0; i < Test.cols(); i++) {
-   //    if(Test_Sd[i] != 0.0) { // This is quite a wild assumption testing for equality, rather use greater than tolerance?
-   //       Test.col(i) /= Test_Sd[i];
-   //    }
-   // }
-
-   // Eigen::MatrixXd Y = Test.transpose();
-   // Eigen::VectorXd Y_Mean = Y.colwise().sum() / Y.rows();
-
-
-   // std::cout << Test << std::endl;
-   // std::cout << "ta dam" << std::endl;
-   // std::cout << Test * Test.transpose() << std::endl;
-
-   // Eigen::MatrixXd Zi = Test.transpose();
-   // Eigen::VectorXd Zi_Mean = Zi.colwise().sum() / Zi.rows();
-   // Zi.rowwise() -= Zi_Mean.transpose();
-   // std::cout <<  Zi.transpose() * Zi << std::endl;
-
-   // scale
    for(int i = 0; i < Xi.cols(); i++) {
       if(Sd[i] != 0.0) { // This is quite a wild assumption testing for equality, rather use greater than tolerance?
          Xi.col(i) /= Sd[i];
       }
    }
 
-   // std::cout << "Col SDs are = " << std::endl;   
-   // std::cout << Xi.colwise().norm() / sqrt(Xi.rows() - 1) << std::endl;
 
    Eigen::MatrixXd Yi = Xi.transpose();
+   // Now center columns after the transpose above
    Eigen::VectorXd Yi_Mean = Yi.colwise().sum() / Yi.rows();
    Yi.rowwise() -= Yi_Mean.transpose();
+
    Ai = Yi.transpose() * Yi;
 }
 
