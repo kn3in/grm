@@ -79,87 +79,10 @@ void read_bed(char* data, Eigen::MatrixXd& X){
    delete[] tmp2;
 }
 
-double swap_na(double x, double NA, double tol) {
-         double out = (fabs(x - NA)) < tol ? 0.0 : x;
-         return out;
-} 
-
-// void calculate_grm(Eigen::MatrixXd& X, Eigen::MatrixXd& A, Eigen::MatrixXd& NM) {
- 
-//    int N = X.rows();
-//    int nsnps = X.cols();
- 
-//    // standardized genotype matrix
-//    Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(N, nsnps);
-      
-//    count_non_missing(X, NM);
-//    scale_and_center_genotype(X, Z);
-   
-//    A = Z * Z.transpose();
-// }
-
 void update_grm(Eigen::MatrixXd& A, Eigen::MatrixXd& NM,
                Eigen::MatrixXd& Ai, Eigen::MatrixXd& NMi) {
    A  = A + Ai;
    NM = NM + NMi;
-}
-
-void scale_and_center_genotype(Eigen::MatrixXd& X, Eigen::MatrixXd& Z) {
-   
-   int N = X.rows();
-   int nsnps = X.cols();
-
-   // columns are genotype classes 0, 1, 2, 3(NA), frequency of the reference allele
-   Eigen::MatrixXd Y = Eigen::MatrixXd::Zero(nsnps, 5);
-   
-   // count number of individuals per genotype class
-   for(int i = 0; i < nsnps; i++) {
-      Eigen::VectorXd i_snp = X.col(i);
-      for(int j = 0; j < N; j++) {
-         Y(i, i_snp[j])++;
-      }
-   }
-
-   // Calculate reference allele frequency
-   for(int i = 0; i < nsnps; i++) {
-      
-      double RAF, MAF;
-      RAF = (0.5 * Y(i, 1) + Y(i, 2)) / (Y(i, 0) + Y(i, 1) + Y(i, 2));
-      
-      if(RAF > 0.5) {
-         MAF = 1.0 - RAF;
-        
-        // swap geno
-         std::for_each(X.col(i).data(), X.col(i).data() + N, [](double &geno) {
-            if(geno != 3)
-               geno = 2 - geno; // otherwise do nothing and keep NA as 3
-         });
-
-      } else {
-         MAF = RAF;
-      }
-      
-      Y(i, 4) = MAF;
-   }
-
-   // Calculate standardized genotype matrix
-   for(int i = 0; i < nsnps; i++) {
-      Eigen::VectorXd i_snp = X.col(i);
-      
-      i_snp = (i_snp.array() - 2 * Y(i, 4)) / sqrt(2 * Y(i, 4) * (1 - Y(i, 4)));
-      
-      // NA value after centering and scaling, (before it was 3)
-      double NA = (3 - 2 * Y(i, 4)) / sqrt(2 * Y(i, 4) * (1 - Y(i, 4)));
-     
-      // set NAs to zero
-      std::for_each(i_snp.data(), i_snp.data() + N, [&](double &d) {
-         d = swap_na(d, NA, 0.0000001);
-      });
-     
-      // std::cout << i_snp.transpose() << std::endl;
-      Z.col(i) = i_snp;
-   }
-
 }
 
 void count_non_missing(Eigen::MatrixXd& X, Eigen::MatrixXd& NM, Eigen::MatrixXd& NMG) {
