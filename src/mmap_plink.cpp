@@ -104,9 +104,7 @@ int main (int argc, char* argv[]) {
     betas.setZero();
 
     read_bed(data + start_index_of_chunk[i], Xi);
-    // std::cout << "Xi as read in: " << std::endl;
-    // std::cout << Xi << std::endl;
-    //------------------------------------------------------------------------
+    
     //zeroing betas of non-overlapping SNPs
     
     int down = i * snps_per_chunk.front();
@@ -123,35 +121,19 @@ int main (int argc, char* argv[]) {
       }    
     }
 
-    // std::cout << "Xi 3 if missing in betas: " << std::endl;
-    // std::cout << Xi << std::endl;
-    // std::cout << betas << std::endl;
-
     count_non_missing(Xi, NMi, NMGi); // NMGi keeps track of missing values!
     swap_na_matrix(Xi); // all NA turns into zero
  
-    // std::cout << "Xi 0 if missing: " << std::endl;
-    // std::cout << Xi << std::endl;
-
-    //------------------------------------------------------------------------
     // change Xi to genotype * effect_size
     for(int l = 0; l < Xi.cols(); l++) {
-      // so in principle I can keep here betas as
-      // any type of container as long as [i] will give me a double
       Xi.col(l) = Xi.col(l) * betas[l]; 
     }
-
-    // std::cout << "Xi multtiplied by betas: " << std::endl;
-    // std::cout << Xi << std::endl;
-
 
     // effects per individual
     g_hat += Xi.rowwise().sum(); 
 
     calculate_grm2(Xi, Ai, NMGi);
-    // calculate_grm3(Xi, Ai);
     update_grm(A, NM, Ai, NMi);
-    
   }
   
   munmap(data, sb.st_size);
@@ -165,7 +147,7 @@ int main (int argc, char* argv[]) {
    }
 
   off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
-  // std::cout << size << std::endl;
+
   int grm_file = open(grm_bin.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   int nm_file = open(grm_n.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   
@@ -199,8 +181,6 @@ int main (int argc, char* argv[]) {
     id_grm << i + 1 << "\t" << fam.individual_id[i] << "\n";
     g_eff << fam.family_id[i] << "\t" << fam.individual_id[i] << "\t" << g_hat[i] << "\n";
   }
-
-  // std::cout << g_hat << std::endl;
 
   return 0;
 }
