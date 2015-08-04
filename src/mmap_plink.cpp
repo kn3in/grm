@@ -69,7 +69,10 @@ int main (int argc, char* argv[]) {
   NM.setZero();
   g_hat.setZero();
 
-
+  std::ifstream bed;
+  bed.open (bed_file, std::ios::in | std::ios::binary); 
+  bed.seekg(3, std::ifstream::beg);
+  
   std::ifstream bed;
   bed.open (bed_file, std::ios::in | std::ios::binary); 
   bed.seekg(3, std::ifstream::beg);
@@ -132,7 +135,7 @@ int main (int argc, char* argv[]) {
     calculate_grm2(Xi, Ai, NMGi);
     update_grm(A, NM, Ai, NMi);
   }
-  
+
   bed.close();
 
   // scale by number of non-missing genotypes 
