@@ -10,3 +10,4 @@ void swap_na_matrix(Eigen::MatrixXd&);
 void calculate_grm2(Eigen::MatrixXd&, Eigen::MatrixXd&, Eigen::MatrixXd&);
 void swap_na_mm(Eigen::MatrixXd&, Eigen::MatrixXd&);
 void calculate_grm3(Eigen::MatrixXd&, Eigen::MatrixXd&);
+void read_bed2(std::ifstream&, Eigen::MatrixXd&);

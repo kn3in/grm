@@ -69,14 +69,11 @@ int main (int argc, char* argv[]) {
   NM.setZero();
   g_hat.setZero();
 
-  struct stat sb;
-  int fd = -1; // file descriptor
-  char* data = NULL;
 
-  fd = open(bed_file.c_str(), O_RDONLY);
-  fstat(fd, &sb);
-  data = (char*)mmap((caddr_t)0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
-
+  std::ifstream bed;
+  bed.open (bed_file, std::ios::in | std::ios::binary); 
+  bed.seekg(3, std::ifstream::beg);
+  
   int chunk_size = nsnps; // SNPs to read in RAM at a time
   std::vector<int> start_index_of_chunk;
   
@@ -86,7 +83,7 @@ int main (int argc, char* argv[]) {
   std::vector<int> snps_per_chunk(chunks, chunk_size);
   if(last_chunk) snps_per_chunk.back() = last_chunk; // Fix it with if()
 
-  for(int i = 0; i < snps_per_chunk.size(); ++i) {
+  for(size_t i = 0; i < snps_per_chunk.size(); ++i) {
     int n_snps = snps_per_chunk.front(); // last chunk start is still multiple of big chunks!!! 
     unsigned int np;
     np = (unsigned int)ceil((double)nindiv / PACK_DENSITY);
@@ -94,7 +91,7 @@ int main (int argc, char* argv[]) {
     start_index_of_chunk.push_back(start_index);
   }
 
-  for(int i = 0; i < snps_per_chunk.size(); ++i) {
+  for(size_t i = 0; i < snps_per_chunk.size(); ++i) {
     Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
     Eigen::MatrixXd NMGi(nindiv, snps_per_chunk[i]); //current non-missing->1 NA->0
     Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
@@ -103,7 +100,7 @@ int main (int argc, char* argv[]) {
     Eigen::VectorXd betas(snps_per_chunk[i]); // current betas    
     betas.setZero();
 
-    read_bed(data + start_index_of_chunk[i], Xi);
+    read_bed2(bed, Xi);
     
     //zeroing betas of non-overlapping SNPs
     
@@ -136,15 +133,14 @@ int main (int argc, char* argv[]) {
     update_grm(A, NM, Ai, NMi);
   }
   
-  munmap(data, sb.st_size);
-  close(fd);
-  
-   // scale by number of non-missing genotypes 
-   for(int i = 0; i < nindiv; i++) {
-      for(int j = 0; j < nindiv; j++) {
-         A(i,j) /= NM(i,j) - 1;
-      }
-   }
+  bed.close();
+
+  // scale by number of non-missing genotypes 
+  for(int i = 0; i < nindiv; i++) {
+     for(int j = 0; j < nindiv; j++) {
+        A(i,j) /= NM(i,j) - 1;
+     }
+  }
 
   off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
 
@@ -177,7 +173,7 @@ int main (int argc, char* argv[]) {
   std::ofstream g_eff(g_pred);
 
 
-  for(int i = 0; i < fam.individual_id.size(); i++) {
+  for(size_t i = 0; i < fam.individual_id.size(); i++) {
     id_grm << i + 1 << "\t" << fam.individual_id[i] << "\n";
     g_eff << fam.family_id[i] << "\t" << fam.individual_id[i] << "\t" << g_hat[i] << "\n";
   }
