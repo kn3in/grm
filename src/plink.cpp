@@ -120,7 +120,7 @@ void calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::MatrixXd& N
    // Eigen::VectorXd NM_per_column = NMG.colwise().sum
 
    // here is an easy way of getting bugs MAKE SURE AT LEAST ONE SNP IS NOT MISSING  
-   Eigen::VectorXd Mean = Xi.colwise().sum().array() / Xi.rows(); // NMG.colwise().sum().array();
+   Eigen::VectorXd Mean = Xi.colwise().sum().array() / NMG.colwise().sum().array();
    
    // center
    Xi.rowwise() -= Mean.transpose();
