@@ -2,13 +2,6 @@
 #include <fstream>
 #include <numeric>
 #include <typeinfo>
-#include <sys/mman.h>
-#include <stdio.h>
-#include <cstdlib>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <vector>
 #include <Eigen/Dense>
 #include "plink.hpp"
@@ -68,10 +61,6 @@ int main (int argc, char* argv[]) {
   A.setZero();
   NM.setZero();
   g_hat.setZero();
-
-  std::ifstream bed;
-  bed.open (bed_file, std::ios::in | std::ios::binary); 
-  bed.seekg(3, std::ifstream::beg);
   
   std::ifstream bed;
   bed.open (bed_file, std::ios::in | std::ios::binary); 
@@ -145,36 +134,26 @@ int main (int argc, char* argv[]) {
      }
   }
 
-  off_t size = sizeof(float) * nindiv * (nindiv + 1) / 2;
+  std::ofstream grm;
+  std::ofstream nm;
 
-  int grm_file = open(grm_bin.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int nm_file = open(grm_n.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+  grm.open(grm_bin, std::ios::out| std::ios::trunc | std::ios::binary); 
+  nm.open(grm_n, std::ios::out| std::ios::trunc | std::ios::binary); 
   
-  int result = lseek(grm_file, size - 1, SEEK_SET);
-  result = write(grm_file, "", 1);
-
-  int result2 = lseek(nm_file, size - 1, SEEK_SET);
-  result2 = write(nm_file, "", 1);
-
-
-  float* grm = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, grm_file, 0);
-  float* non_missing = (float*)mmap((caddr_t)0, size, PROT_READ | PROT_WRITE, MAP_SHARED, nm_file, 0);
-
-  int sum_up_toi = 0;
   for(int i = 0; i < nindiv; i++) {
-    sum_up_toi += i;
-      for(int j = 0; j <= i; j++) {
-        grm[sum_up_toi + j] = (float)A(i,j);
-        non_missing[sum_up_toi + j] = (float)NM(i,j);
+    for(int j = 0; j <= i; j++) {
+      float grm_ij = A(i,j);
+      float nm_ij = NM(i,j);
+      grm.write(reinterpret_cast<const char*>(&grm_ij), sizeof(float));
+      nm.write(reinterpret_cast<const char*>(&nm_ij), sizeof(float));
     }
   }
   
-  munmap(grm, size);
-  close(grm_file);
+  grm.close();
+  nm.close();
 
   std::ofstream id_grm(grm_id);
   std::ofstream g_eff(g_pred);
-
 
   for(size_t i = 0; i < fam.individual_id.size(); i++) {
     id_grm << i + 1 << "\t" << fam.individual_id[i] << "\n";
