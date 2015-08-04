@@ -79,7 +79,7 @@ void bim_data::setup_snps_without_betas(const betas& b) {
  // how to make sure function has been called only once?
    bim_data::find_overlap(b);
    
-   if(snps_without_betas.size() == nsnps) 
+   if(snps_without_betas.size() == (size_t)nsnps) 
       throw std::runtime_error("Runtime error: no overlapping SNPs in bim and betas files");
    
    std::cout << "Number of non-overlapping SNPs [present in bim, absent in betas file]: " << std::endl;
@@ -89,7 +89,7 @@ void bim_data::setup_snps_without_betas(const betas& b) {
 void bim_data::setup_snps_to_iterate() {
    snps_to_use = std::vector<bool>(nsnps, true);
    
-   for(int i = 0; i < snps_without_betas.size(); i++) {
+   for(size_t i = 0; i < snps_without_betas.size(); i++) {
       snps_to_use[ rs_id2index[ snps_without_betas[i] ] ] = false;
     }
 }     

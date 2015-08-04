@@ -53,8 +53,8 @@ void decode_plink(unsigned char *out,
 
 void read_bed(char* data, Eigen::MatrixXd& X){
    unsigned int np;
-   int N = X.rows();
-   int nsnps = X.cols();
+   int unsigned N = X.rows();
+   int unsigned nsnps = X.cols();
    Eigen::VectorXd tmp3(N);
 
    np = (unsigned int)ceil((double)N / PACK_DENSITY);
@@ -66,6 +66,36 @@ void read_bed(char* data, Eigen::MatrixXd& X){
          // read raw genotypes
          std::copy(data + (sizeof(char) * np) * j,
                    data + (sizeof(char) * np) * (j + 1), tmp);
+
+         // decode the genotypes
+         decode_plink(tmp2, tmp, np);
+
+         for(unsigned int i = 0 ; i < N ; i++)
+            tmp3(i) = (double)tmp2[i];
+         X.col(j) = tmp3;
+      }
+   
+   delete[] tmp;
+   delete[] tmp2;
+}
+
+void read_bed2(std::ifstream& bed, Eigen::MatrixXd& X){
+   unsigned int np;
+   unsigned int N = X.rows();
+   unsigned int nsnps = X.cols();
+   Eigen::VectorXd tmp3(N);
+
+   np = (unsigned int)ceil((double)N / PACK_DENSITY);
+   unsigned char* tmp = new unsigned char[np];
+   unsigned char* tmp2 = new unsigned char[np * PACK_DENSITY];
+
+   for(unsigned int j = 0 ; j < nsnps ; j++)
+      {
+         // read raw genotypes
+         bed.read((char*)tmp, sizeof(char) * np);
+
+         // std::copy(data + (sizeof(char) * np) * j,
+         //           data + (sizeof(char) * np) * (j + 1), tmp);
 
          // decode the genotypes
          decode_plink(tmp2, tmp, np);

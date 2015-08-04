@@ -48,7 +48,7 @@ betas::~betas() {
 }
 
 void betas::swap_betas(const bim_data& bim) {
-   for(int i = 0; i < bim.snps_to_use.size(); i++) {
+   for(size_t i = 0; i < bim.snps_to_use.size(); i++) {
       if(bim.snps_to_use[i]) {
          int beta_index = rs_id2index[ bim.bim_rs_id[i] ];
          if(bim.bim_ref_all[i] != alleles[beta_index]) {
