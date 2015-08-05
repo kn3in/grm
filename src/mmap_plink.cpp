@@ -44,7 +44,7 @@ int main (int argc, char* argv[]) {
   // set up <bool> vector to decide which SNPs are in common between bed adn betas files
   bim.setup_snps_to_iterate();
   // itereate over SNPs common between bed/betas files and swap sign of the effect size if reference alleles differ 
-  my_betas.swap_betas(bim);
+  my_betas.order_betas(bim);
 
 
 
@@ -53,7 +53,7 @@ int main (int argc, char* argv[]) {
   
   int nindiv = fam.nindiv; // number of individuals as per test.fam
   int nsnps = bim.nsnps; // number of snps as per test.bim
-  // Eigen::MatrixXd X(nindiv, nsnps); // Genotype
+  
   Eigen::MatrixXd A(nindiv, nindiv); // GRM
   Eigen::MatrixXd NM(nindiv, nindiv); // Number of non-missing SNPs per each individual pair
   Eigen::VectorXd g_hat(nindiv); // genetic effects aka row sums
@@ -65,49 +65,21 @@ int main (int argc, char* argv[]) {
   std::ifstream bed;
   bed.open (bed_file, std::ios::in | std::ios::binary); 
   bed.seekg(3, std::ifstream::beg);
+  bim.setup_snps_per_chunk(nsnps);
   
-  int chunk_size = nsnps; // SNPs to read in RAM at a time
-  std::vector<int> start_index_of_chunk;
-  
-  int chunks = ceil( (double)nsnps / chunk_size);
-  int last_chunk = nsnps % chunk_size; 
-  
-  std::vector<int> snps_per_chunk(chunks, chunk_size);
-  if(last_chunk) snps_per_chunk.back() = last_chunk; // Fix it with if()
-
-  for(size_t i = 0; i < snps_per_chunk.size(); ++i) {
-    int n_snps = snps_per_chunk.front(); // last chunk start is still multiple of big chunks!!! 
-    unsigned int np;
-    np = (unsigned int)ceil((double)nindiv / PACK_DENSITY);
-    unsigned int start_index = PLINK_OFFSET + (sizeof(char) * np) * n_snps * i;
-    start_index_of_chunk.push_back(start_index);
-  }
-
-  for(size_t i = 0; i < snps_per_chunk.size(); ++i) {
-    Eigen::MatrixXd Xi(nindiv, snps_per_chunk[i]); //current Genotype
-    Eigen::MatrixXd NMGi(nindiv, snps_per_chunk[i]); //current non-missing->1 NA->0
+  for(size_t i = 0; i < bim.snps_per_chunk.size(); ++i) {
+    Eigen::MatrixXd Xi(nindiv, bim.snps_per_chunk[i]); //current Genotype
+    Eigen::MatrixXd NMGi(nindiv, bim.snps_per_chunk[i]); //current non-missing->1 NA->0
     Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
     Eigen::MatrixXd NMi(nindiv, nindiv); // current Number of non-missing SNPs
 
-    Eigen::VectorXd betas(snps_per_chunk[i]); // current betas    
-    betas.setZero();
-
     read_bed2(bed, Xi);
+
+    int down = i * bim.snps_per_chunk.front();
     
-    //zeroing betas of non-overlapping SNPs
-    
-    int down = i * snps_per_chunk.front();
-    int up = down + snps_per_chunk[i];
-    
-    for(int j = down; j < up; j++) {
-      int local_i = j - down;
-      if(bim.snps_to_use[j]) {
-        int betas_ind = my_betas.rs_id2index[ bim.bim_rs_id[j] ];
-        betas[local_i] = my_betas.effects[betas_ind];
-      } else {
-        // genotypes of all SNPs which do NOT have betas set to 3 (NA value)
-        Xi.col(local_i) = Eigen::VectorXd::Constant(nindiv, 3);
-      }    
+    for(int l = 0; l < Xi.cols(); l++) {
+      if(!bim.snps_to_use[down + l])
+        Xi.col(l) = Eigen::VectorXd::Constant(nindiv, 3);
     }
 
     count_non_missing(Xi, NMi, NMGi); // NMGi keeps track of missing values!
@@ -115,7 +87,7 @@ int main (int argc, char* argv[]) {
  
     // change Xi to genotype * effect_size
     for(int l = 0; l < Xi.cols(); l++) {
-      Xi.col(l) = Xi.col(l) * betas[l]; 
+      Xi.col(l) = Xi.col(l) * my_betas.effects_in_order[down + l]; 
     }
 
     // effects per individual

@@ -3,6 +3,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <math.h>
 #include "plink_data.hpp"
 #include "betas.hpp"
 
@@ -83,8 +84,15 @@ void bim_data::setup_snps_to_iterate() {
     }
 }     
 
-
-
+void bim_data::setup_snps_per_chunk(int chunk_size) {
+    if(chunk_size > nsnps)
+        chunk_size = nsnps;
+    int chunks = ceil( (double)nsnps / chunk_size);
+    int last_chunk = nsnps % chunk_size; 
+    snps_per_chunk = std::vector<int>(chunks, chunk_size);
+    if(last_chunk)
+        snps_per_chunk.back() = last_chunk;
+}
 
 
 fam_data::fam_data(std::string path_to_fam_file) {

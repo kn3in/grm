@@ -12,7 +12,8 @@ class bim_data {
 	    void find_overlap(const betas&);
 	    void setup_snps_without_betas(const betas&);
         void setup_snps_to_iterate();
-		
+		void setup_snps_per_chunk(int chunk_size);
+
 		std::vector<int> bim_chr;
 		std::vector<std::string> bim_rs_id;
 		std::vector<double> bim_genetic_distance;
@@ -23,6 +24,7 @@ class bim_data {
 		int nsnps;
 		std::vector<bool> snps_to_use;
 		std::vector<std::string> snps_without_betas;
+		std::vector<int> snps_per_chunk;
 };
 
 class fam_data {

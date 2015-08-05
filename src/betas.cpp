@@ -47,19 +47,28 @@ betas::~betas() {
    
 }
 
-void betas::swap_betas(const bim_data& bim) {
+void betas::order_betas(const bim_data& bim) {
+   effects_in_order = std::vector<double>(bim.nsnps, 0);
+
    for(size_t i = 0; i < bim.snps_to_use.size(); i++) {
+      
       if(bim.snps_to_use[i]) {
+         
          int beta_index = rs_id2index[ bim.bim_rs_id[i] ];
+         effects_in_order[i] = effects[beta_index];
+
          if(bim.bim_ref_all[i] != alleles[beta_index]) {
+            
+            
             // alternative should be the same as in betas file
             if(bim.bim_another_all[i] != alleles[beta_index]) {
                throw std::runtime_error("Runtime error: neither reference nor alternative alleles for SNP: " +
                                         bim.bim_ref_all[i] +
                                         "agree with the allele provided in the betas file");
             }
-            // swap sign for effect size otherwise do nothing
-            effects[beta_index] = -effects[beta_index];
+            
+            // swap sign for effect size
+            effects_in_order[i] = -effects[beta_index];
          }
       }
    }

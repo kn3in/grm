@@ -12,11 +12,13 @@ class betas {
 	// betas(); do I want default constructor w/o path?
 	betas(std::string);
 	~betas();
-	void swap_betas(const bim_data&);
+	void order_betas(const bim_data&);
+
 
     std::vector<std::string> snps;
     std::vector<std::string> alleles;
     std::vector<double> effects;
     std::map<std::string, int> rs_id2index;
+    std::vector<double> effects_in_order;
 
 };
