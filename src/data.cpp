@@ -97,7 +97,7 @@ void data::calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::Matri
    
    Eigen::VectorXd Sd = Xi.colwise().norm().array() / (NMGi.colwise().sum().array() - 1).sqrt();
 
-   // scale
+   // scale columns
    for(int i = 0; i < Xi.cols(); i++) {
       if(Sd[i] != 0.0) { // This is quite a wild assumption testing for equality, rather use greater than tolerance?
          Xi.col(i) /= Sd[i];
@@ -111,6 +111,16 @@ void data::calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::Matri
    Eigen::VectorXd Xi_Mean = Xi.rowwise().sum().array() / NMGi.rowwise().sum().array();
    Xi.colwise() -= Xi_Mean;
    swap_na_mm(Xi, NMGi);
+
+   Eigen::VectorXd Xi_Sd = Xi.rowwise().norm().array() / (NMGi.rowwise().sum().array() - 1).sqrt();
+
+   // scale rows
+   for(int i = 0; i < Xi.rows(); i++) {
+      if(Xi_Sd[i] != 0.0) { // what is the perfomance cost here for doing it rowwise??
+         Xi.row(i) /= Xi_Sd[i];
+      }
+   }
+
    Ai = Xi * Xi.transpose();
 }
 
