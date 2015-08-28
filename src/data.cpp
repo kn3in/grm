@@ -84,7 +84,6 @@ void data::swap_na_matrix(Eigen::MatrixXd& Xi) {
 }
 
 void data::calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::MatrixXd& NMGi) {
-   
    // Eigen::VectorXd NM_per_column = NMGi.colwise().sum
 
    // here is an easy way of getting bugs MAKE SURE AT LEAST ONE SNP IS NOT MISSING  
@@ -99,7 +98,7 @@ void data::calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::Matri
 
    // scale
    for(int i = 0; i < Xi.cols(); i++) {
-      if(Sd[i] != 0.0) { // This is quite a wild assumption testing for equality, rather use greater than tolerance?
+      if(Sd[i] > 1e-06) {
          Xi.col(i) /= Sd[i];
       }
    }
