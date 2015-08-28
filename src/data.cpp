@@ -115,7 +115,7 @@ void data::calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::Matri
 
    // scale rows
    for(int i = 0; i < Xi.rows(); i++) {
-      if(Xi_Sd[i] != 0.0) { // what is the perfomance cost here for doing it rowwise??
+      if(Xi_Sd[i] > 1e-06) { // what is the perfomance cost here for doing it rowwise??
          Xi.row(i) /= Xi_Sd[i];
       }
    }
