@@ -155,7 +155,7 @@ void data::save(std::string path_to) {
 	std::ofstream g_eff(g_pred);
 
 	for(size_t i = 0; i < individual_id.size(); i++) {
-		id_grm << i + 1 << "\t" << individual_id[i] << "\n";
+		id_grm << family_id[i] << "\t" << individual_id[i] << "\n";
 		g_eff << family_id[i] << "\t" << individual_id[i] << "\t" << g_hat[i] << "\n";
 	}
 	
