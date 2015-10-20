@@ -32,8 +32,8 @@ int main (int argc, char* argv[]) {
   bim.setup_snps_without_betas(my_betas);
   bim.setup_snps_to_iterate();
 
-  // wild assumption that average per 1K SNPs won't change much
-  bim.setup_snps_per_chunk(1000);
+  // read in chunks but not overdo it
+  bim.setup_snps_per_chunk(100000);
 
   my_betas.order_betas(bim);
   

@@ -19,7 +19,7 @@ data::~data() {
 }
 
 void data::update(Eigen::MatrixXd& Xi, int i, const bim_data& bim, const betas& my_betas) {
-	Eigen::MatrixXd NMGi(nindiv, bim.snps_per_chunk[i]); //current non-missing->1 NA->0
+  	Eigen::MatrixXd NMGi(nindiv, bim.snps_per_chunk[i]); //current non-missing->1 NA->0
     Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
     Eigen::MatrixXd NMi(nindiv, nindiv); // current Number of non-missing SNPs
 
@@ -84,42 +84,6 @@ void data::swap_na_matrix(Eigen::MatrixXd& Xi) {
 }
 
 void data::calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::MatrixXd& NMGi) {
-   // Eigen::VectorXd NM_per_column = NMGi.colwise().sum
-
-   // here is an easy way of getting bugs MAKE SURE AT LEAST ONE SNP IS NOT MISSING  
-   Eigen::VectorXd Mean = Xi.colwise().sum().array() / NMGi.colwise().sum().array();
-   
-   // center
-   Xi.rowwise() -= Mean.transpose();
-   // NA is not zero anymore so bring it back to zero!!!
-   swap_na_mm(Xi, NMGi);
-   
-   Eigen::VectorXd Sd = Xi.colwise().norm().array() / (NMGi.colwise().sum().array() - 1).sqrt();
-
-   // scale columns
-   for(int i = 0; i < Xi.cols(); i++) {
-      if(Sd[i] > 1e-06) {
-         Xi.col(i) /= Sd[i];
-      }
-   }
-
-   // swap is not nessesary cause 0 divided by sd is still 0
-   //swap_na_mm(Xi, NMGi);
-
-   // Eigen::MatrixXd Yi = Xi.transpose();
-   Eigen::VectorXd Xi_Mean = Xi.rowwise().sum().array() / NMGi.rowwise().sum().array();
-   Xi.colwise() -= Xi_Mean;
-   swap_na_mm(Xi, NMGi);
-
-   Eigen::VectorXd Xi_Sd = Xi.rowwise().norm().array() / (NMGi.rowwise().sum().array() - 1).sqrt();
-
-   // scale rows
-   for(int i = 0; i < Xi.rows(); i++) {
-      if(Xi_Sd[i] > 1e-06) { // what is the perfomance cost here for doing it rowwise??
-         Xi.row(i) /= Xi_Sd[i];
-      }
-   }
-
    Ai = Xi * Xi.transpose();
 }
 
