@@ -2,10 +2,13 @@
 #include <stdexcept>
 #include <vector>
 #include <set>
+#include <numeric>
+#include <iterator>
 #include <algorithm>
 #include <math.h>
 #include "plink_data.hpp"
 #include "betas.hpp"
+#include "ld_data.hpp"
 
 bim_data::bim_data(std::string path_to_bim_file) {
    
@@ -94,6 +97,48 @@ void bim_data::setup_snps_per_chunk(int chunk_size) {
         snps_per_chunk.back() = last_chunk;
 }
 
+void bim_data::setup_snps_per_chunk2(const ld_data& ld) {
+  // for now assume ld data is sorted
+  // and bim data is sorted as well, too much to ask?
+  
+  
+
+  for(size_t chunk = 0; chunk < ld.stop.size(); chunk++) {
+    // if we pretend that we do not know anything about data being sorted
+    std::vector<int> snp_index_in_a_chunk;
+    
+    for(int snp = 0; snp < nsnps; snp++) {
+      if(bim_chr[snp] == ld.chr[chunk] &&
+         bim_position[snp] >= ld.start[chunk] &&
+         bim_position[snp] < ld.stop[chunk]) {
+      
+         snp_index_in_a_chunk.push_back(snp);
+      }
+
+    }
+    
+    chunks.push_back(snp_index_in_a_chunk);
+
+  }
+ 
+}
+
+void bim_data::setup_number_of_snps_per_chunk() {
+  for(size_t i = 0; i < chunks.size(); i++) {
+    std::vector<int> chnk = chunks[i];
+    if( !chnk.empty() ) {
+        int n_snps = chnk.back() - chnk.front();
+        snps_per_chunk.push_back(n_snps);
+    }
+  }
+}
+
+void bim_data::setup_running_sum_per_chunk() {
+// to be used as offset for aligning snps betas (all in RAM) with the snps currently read in RAM
+  running_sums.resize(snps_per_chunk.size());
+  running_sums.front() = 0;
+  std::partial_sum(snps_per_chunk.begin(), snps_per_chunk.end() - 1,  running_sums.begin() + 1);
+}
 
 fam_data::fam_data(std::string path_to_fam_file) {
    std::ifstream fam_file(path_to_fam_file.c_str());

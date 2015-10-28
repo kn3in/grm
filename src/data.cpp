@@ -19,11 +19,11 @@ data::~data() {
 }
 
 void data::update(Eigen::MatrixXd& Xi, int i, const bim_data& bim, const betas& my_betas) {
-	Eigen::MatrixXd NMGi(nindiv, bim.snps_per_chunk[i]); //current non-missing->1 NA->0
+  	Eigen::MatrixXd NMGi(nindiv, bim.snps_per_chunk[i]); //current non-missing->1 NA->0
     Eigen::MatrixXd Ai(nindiv, nindiv); // current GRM
     Eigen::MatrixXd NMi(nindiv, nindiv); // current Number of non-missing SNPs
 
-    int down = i * bim.snps_per_chunk.front();
+    int down = bim.running_sums[i];
     
     for(int l = 0; l < Xi.cols(); l++) {
       if(!bim.snps_to_use[down + l])
@@ -106,10 +106,10 @@ void data::calculate_grm2(Eigen::MatrixXd& Xi, Eigen::MatrixXd& Ai, Eigen::Matri
    // swap is not nessesary cause 0 divided by sd is still 0
    //swap_na_mm(Xi, NMGi);
 
-   // Eigen::MatrixXd Yi = Xi.transpose();
-   Eigen::VectorXd Xi_Mean = Xi.rowwise().sum().array() / NMGi.rowwise().sum().array();
-   Xi.colwise() -= Xi_Mean;
-   swap_na_mm(Xi, NMGi);
+   // // Eigen::MatrixXd Yi = Xi.transpose();
+   // Eigen::VectorXd Xi_Mean = Xi.rowwise().sum().array() / NMGi.rowwise().sum().array();
+   // Xi.colwise() -= Xi_Mean;
+   // swap_na_mm(Xi, NMGi);
    Ai = Xi * Xi.transpose();
 }
 

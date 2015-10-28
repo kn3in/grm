@@ -6,6 +6,7 @@
 #include "betas.hpp"
 #include "plink_data.hpp"
 #include "data.hpp"
+#include "ld_data.hpp"
 
 int main (int argc, char* argv[]) {
   
@@ -28,13 +29,18 @@ int main (int argc, char* argv[]) {
   bim_data bim(bim_file);
   fam_data fam(fam_file);
   data results(fam);
-
+  
   bim.setup_snps_without_betas(my_betas);
   bim.setup_snps_to_iterate();
-  bim.setup_snps_per_chunk(bim.nsnps);
-
+  
   my_betas.order_betas(bim);
   
+  ld_data ld("../ld_blocks/striped_chr_head_less.bed");
+  
+  bim.setup_snps_per_chunk2(ld);
+  bim.setup_number_of_snps_per_chunk();
+  bim.setup_running_sum_per_chunk();
+
   std::ifstream bed;
   bed.open (bed_file, std::ios::in | std::ios::binary); 
   bed.seekg(3, std::ifstream::beg);

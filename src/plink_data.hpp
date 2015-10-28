@@ -5,6 +5,7 @@
 #include <map>
 
 class betas;
+class ld_data;
 
 class bim_data {
 	public:
@@ -14,7 +15,10 @@ class bim_data {
 	    void setup_snps_without_betas(const betas&);
         void setup_snps_to_iterate();
 		void setup_snps_per_chunk(int chunk_size);
-
+        void setup_snps_per_chunk2(const ld_data&);
+		void setup_number_of_snps_per_chunk();
+        void setup_running_sum_per_chunk();
+        
 		std::vector<int> bim_chr;
 		std::vector<std::string> bim_rs_id;
 		std::vector<double> bim_genetic_distance;
@@ -26,6 +30,8 @@ class bim_data {
 		std::vector<bool> snps_to_use;
 		std::vector<std::string> snps_without_betas;
 		std::vector<int> snps_per_chunk;
+        std::vector<std::vector<int>> chunks;
+        std::vector<int> running_sums;
 };
 
 class fam_data {
